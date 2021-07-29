@@ -1,0 +1,79 @@
+controller:
+  url: http://localhost:8080
+  password: somepassword
+  
+  # how many liters went through the flow meter before it gave out a single tick
+  liters_per_tick: 10
+
+detector:
+
+  # how many days of logs to read in order to calculate what the average
+  # flow rate of a station is 
+  averages_history_days: 30
+
+  # time, in hours, to wait between reading averages used to calculate deviation
+  averages_update_interval_hours: 10
+  
+  # time, in seconds, to wait between polling the controller for information
+  # about a running station
+  running_station_interval_seconds: 30
+
+  stations:    
+
+    # default can be overridden by creating a stanza with the station name
+    default:
+
+      # how many measurements to look at in order to calculate the average flow.
+      # the larger this number is the better it can account for temporary spikes, but
+      # the more time it will take to detect a leak. a measurement is received every
+      # "running_station_interval_seconds" seconds, so e.g. putting 6 here means 
+      # accumulating results for 6 * 3 = 180 seconds
+      flow_rate_average_history_meansurements: 6
+
+      # the difference between the caclulated mean (as returned by mean() across the 
+      # last flow_rate_average_history_meansurements measurements) and the mean calculated
+      # across averages_history_days. this is an absolute difference
+      allowed_flow_rate_diff_from_average: 1
+      
+      # how many measurements to ignore to account for in rush (a high flow rate due to 
+      # pipes being empty and being backfilled when the station starts). this is in the
+      # units of "running_station_interval_seconds" seconds (e.g. 4 * 30) = 160 seconds
+      num_inrush_measurements: 4
+      
+      # an absolute max flow rate - regardless of inrush. this can detect really bad
+      # breaks in a station. in the units of controller.liters_per_tick per minute (e.g. if 
+      # liters_per_tick is 10, then a value of 8 means 80L per minute)
+      allowed_flow_rate_max: 8
+    pecans:
+      allowed_flow_rate_max: 12
+
+report:
+
+  # a cron-like schedule during which time a report will be generated and emailed
+  schedule: 0 0 * * FRI
+
+  generator:
+
+    # number of days to include in the history
+    history_days: 30
+
+  emailer:
+
+    # the address to send the report to
+    to_email_address: rx@there.com
+
+telegram:
+
+  # the bot token, as returned by botfather
+  token: some-bot-id
+  
+  # the chat id, as returned by curling "https://api.telegram.org/bot<bot token>/getUpdates"
+  chat_id: 0123456789
+
+sendgrid:
+
+  # the api key for your account
+  api_key: somekey
+
+  # the "from" email address (must have been verified)
+  from_email_address: me@here.com
